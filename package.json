@@ -1,6 +1,6 @@
 {
   "name": "nomos-client",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Nomos API client",
   "main": "lib/index.js",
   "scripts": {

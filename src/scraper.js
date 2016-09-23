@@ -8,6 +8,7 @@ import { useFilesystemCache } from './middleware/cache'
 import { promisifiedRequest } from './middleware/request'
 import { throttle } from './middleware/throttle'
 import { amap } from './utils'
+import { getDocumentTree } from './index'
 
 export async function syncScrapedToExistingDocument (scraped, existingDocumentId, syncActions) {
   console.log(`loading existing document tree for ${existingDocumentId}`)
