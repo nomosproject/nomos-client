@@ -8,12 +8,12 @@ export async function getDocument (documentId) {
 }
 
 // possible document params: id, title, subtitle, tags, locale, body, upload, parentId
-export async function createDocument (document, { action } = {}) {
+export async function createDocument (document, { action = 'publish' } = {}) {
   const body = { document, action }
   return await postJson('documents', body)
 }
 
-export async function updateDocument (documentId, document, { action } = {}) {
+export async function updateDocument (documentId, document, { action = 'publish' } = {}) {
   const body = { document, action }
   return await putJson(`documents/${documentId}`, body)
 }

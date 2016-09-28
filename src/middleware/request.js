@@ -4,7 +4,7 @@ const _ = require('lodash')
 function promisifiedRequest (ctx) {
   console.log('fetching', ctx.url)
   return new Promise((resolve, reject) => {
-    request.get(ctx.url).end((err, res) => {
+    request.get(encodeURI(ctx.url)).end((err, res) => {
       if (err) { return reject(err) }
 
       ctx = _.assign(ctx, { response: res.text })

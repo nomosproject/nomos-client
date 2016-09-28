@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch'
 import FormData from 'form-data'
 
-const NOMOS_API_KEY = '661d2b57-5a73-4ed8-8b40-17d7a2e4c51e'
+const NOMOS_API_KEY = '7724c337-8cb2-43e8-a851-a273daffd58d'
 const NOMOS_API_URL = 'http://localhost:8000/api'
 
 function getHeaders (opts = {}) {

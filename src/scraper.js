@@ -31,9 +31,10 @@ async function performUpdates (document, { parent = {}, parentAction } = {}, syn
 
     const existingChildren = _.get('children')(document) || []
     const newChildren = _.get('_params.children')(document) || []
-    if (_.isEmpty(existingChildren) && _.isEmpty(newChildren)) { return }
+    const allChildren = [...existingChildren, ...newChildren]
+    if (_.isEmpty(allChildren)) { return }
 
-    await amap(existingChildren, async child => await performUpdates(child, { parent: result, parentAction: currentAction }, syncActions))
+    await amap(allChildren, async child => await performUpdates(child, { parent: result, parentAction: currentAction }, syncActions))
 
   } catch (err) {
     console.error(err)
@@ -75,7 +76,7 @@ export function calculateDocumentHash (document) {
 
 function getHashAttrs (document) {
   return _.flow(
-    _.pick(['title', 'subtitle', 'summary', 'contents', 'metadata', 'tags']),
+    _.pick(['title', 'subtitle', 'summary', 'contents', 'metadata', 'tags']), // TODO: type/subtype?
     _.pickBy(x => !_.isEmpty(x))
   )(document)
 }
@@ -87,7 +88,7 @@ function hashObject (obj) {
 function serializeObject (obj) {
   const ordered = {}
   Object.keys(obj).sort().forEach(key => ordered[key] = obj[key])
-  return JSON.stringify(obj)
+  return JSON.stringify(ordered)
 }
 
 export const request = compose([
@@ -110,3 +111,47 @@ export const loadHtml = async page => {
 }
 
 export const safeText = el => el.text().trim()
+
+export function generateDocumentActions (client, defaultSyncProps) {
+  async function keepDocument (doc) {
+    console.log('NO-OP  ', doc.id, doc.syncKey)
+    return doc
+  }
+
+  async function updateDocument (doc, parent = {}) {
+    const document = doc._params || _.cloneDeep(doc)
+    const result = await client.updateDocument(doc.id, {
+      ...defaultSyncProps,
+      title: document.title,
+      body: document.contents,
+      md5: calculateDocumentHash(document),
+      metadata: document.metadata,
+      parentId: parent.id,
+      syncKey: document.title
+    })
+    console.log('UPDATED', result.document.id, result.document.title)
+    return result.document
+  }
+
+  async function createDocument (doc, parent = {}) {
+    const document = doc._params || doc
+    const result = await client.createDocument({
+      ...defaultSyncProps,
+      title: document.title,
+      body: document.contents,
+      md5: calculateDocumentHash(document),
+      parentId: parent.id,
+      syncKey: document.title
+    })
+    console.log(`CREATED ${result.document.id} ${result.document.title} (parent: ${parent.id})`)
+    return result.document
+  }
+
+  async function removeDocument (doc) {
+    console.log('DELETE ', doc.id, doc.syncKey)
+    await client.deleteDocument(doc.id)
+    return {}
+  }
+
+  return { keepDocument, updateDocument, createDocument, removeDocument }
+}
